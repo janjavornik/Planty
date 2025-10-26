@@ -1,0 +1,154 @@
+{
+  "plants": {
+    "snake_plant": {
+      "name": "Snake Plant",
+      "scientific_name": "Sansevieria trifasciata",
+      "watering_interval": 14,
+      "humidity_min": 20,
+      "humidity_max": 40,
+      "care_level": "easy",
+      "description": "Low-maintenance plant that tolerates neglect and low light conditions.",
+      "care_tips": ["Water sparingly", "Tolerates low light", "Drought resistant"]
+    },
+    "pothos": {
+      "name": "Pothos",
+      "scientific_name": "Epipremnum aureum",
+      "watering_interval": 7,
+      "humidity_min": 40,
+      "humidity_max": 60,
+      "care_level": "easy",
+      "description": "Fast-growing vine that's perfect for beginners.",
+      "care_tips": ["Water when soil is dry", "Bright indirect light", "Trim regularly"]
+    },
+    "peace_lily": {
+      "name": "Peace Lily",
+      "scientific_name": "Spathiphyllum",
+      "watering_interval": 5,
+      "humidity_min": 50,
+      "humidity_max": 70,
+      "care_level": "medium",
+      "description": "Elegant plant with white flowers that thrives in humid conditions.",
+      "care_tips": ["Keep soil moist", "High humidity", "Filtered light"]
+    },
+    "monstera": {
+      "name": "Monstera",
+      "scientific_name": "Monstera deliciosa",
+      "watering_interval": 7,
+      "humidity_min": 50,
+      "humidity_max": 70,
+      "care_level": "medium",
+      "description": "Popular plant with distinctive split leaves.",
+      "care_tips": ["Water weekly", "Bright indirect light", "Support with pole"]
+    },
+    "zz_plant": {
+      "name": "ZZ Plant",
+      "scientific_name": "Zamioculcas zamiifolia",
+      "watering_interval": 14,
+      "humidity_min": 20,
+      "humidity_max": 40,
+      "care_level": "easy",
+      "description": "Extremely drought-tolerant plant with glossy leaves.",
+      "care_tips": ["Water infrequently", "Low to bright light", "Very low maintenance"]
+    },
+    "rubber_tree": {
+      "name": "Rubber Tree",
+      "scientific_name": "Ficus elastica",
+      "watering_interval": 7,
+      "humidity_min": 40,
+      "humidity_max": 60,
+      "care_level": "easy",
+      "description": "Large-leafed plant that makes a great indoor tree.",
+      "care_tips": ["Water when dry", "Bright light", "Wipe leaves clean"]
+    },
+    "spider_plant": {
+      "name": "Spider Plant",
+      "scientific_name": "Chlorophytum comosum",
+      "watering_interval": 5,
+      "humidity_min": 40,
+      "humidity_max": 60,
+      "care_level": "easy",
+      "description": "Easy-care plant that produces baby plantlets.",
+      "care_tips": ["Keep soil moist", "Bright indirect light", "Propagate babies"]
+    },
+    "aloe_vera": {
+      "name": "Aloe Vera",
+      "scientific_name": "Aloe barbadensis",
+      "watering_interval": 14,
+      "humidity_min": 20,
+      "humidity_max": 40,
+      "care_level": "easy",
+      "description": "Succulent plant with medicinal properties.",
+      "care_tips": ["Water deeply, then let dry", "Bright light", "Well-draining soil"]
+    },
+    "fiddle_leaf_fig": {
+      "name": "Fiddle Leaf Fig",
+      "scientific_name": "Ficus lyrata",
+      "watering_interval": 7,
+      "humidity_min": 50,
+      "humidity_max": 70,
+      "care_level": "hard",
+      "description": "Trendy plant with large, violin-shaped leaves.",
+      "care_tips": ["Consistent watering", "Bright indirect light", "Don't move frequently"]
+    },
+    "boston_fern": {
+      "name": "Boston Fern",
+      "scientific_name": "Nephrolepis exaltata",
+      "watering_interval": 3,
+      "humidity_min": 60,
+      "humidity_max": 80,
+      "care_level": "medium",
+      "description": "Lush fern that loves humidity and indirect light.",
+      "care_tips": ["Keep soil moist", "High humidity", "Indirect light only"]
+    },
+    "english_ivy": {
+      "name": "English Ivy",
+      "scientific_name": "Hedera helix",
+      "watering_interval": 5,
+      "humidity_min": 40,
+      "humidity_max": 60,
+      "care_level": "easy",
+      "description": "Trailing vine that's great for hanging baskets.",
+      "care_tips": ["Water regularly", "Cool temperatures", "Bright indirect light"]
+    },
+    "jade_plant": {
+      "name": "Jade Plant",
+      "scientific_name": "Crassula ovata",
+      "watering_interval": 10,
+      "humidity_min": 30,
+      "humidity_max": 50,
+      "care_level": "easy",
+      "description": "Succulent with thick, fleshy leaves symbolizing good luck.",
+      "care_tips": ["Water when dry", "Bright light", "Prune for shape"]
+    },
+    "dracaena": {
+      "name": "Dracaena",
+      "scientific_name": "Dracaena marginata",
+      "watering_interval": 10,
+      "humidity_min": 40,
+      "humidity_max": 60,
+      "care_level": "easy",
+      "description": "Tall plant with sword-like leaves and colorful edges.",
+      "care_tips": ["Water when dry", "Medium light", "Remove brown tips"]
+    },
+    "calathea": {
+      "name": "Calathea",
+      "scientific_name": "Calathea orbifolia",
+      "watering_interval": 5,
+      "humidity_min": 60,
+      "humidity_max": 80,
+      "care_level": "hard",
+      "description": "Prayer plant with beautiful patterned leaves.",
+      "care_tips": ["Keep soil moist", "High humidity", "Filtered water preferred"]
+    },
+    "bird_of_paradise": {
+      "name": "Bird of Paradise",
+      "scientific_name": "Strelitzia reginae",
+      "watering_interval": 7,
+      "humidity_min": 50,
+      "humidity_max": 70,
+      "care_level": "medium",
+      "description": "Tropical plant with large leaves and exotic flowers.",
+      "care_tips": ["Water regularly", "Bright light", "Clean leaves often"]
+    }
+  }
+}
