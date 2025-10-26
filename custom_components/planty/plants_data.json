@@ -1,0 +1,184 @@
+{
+  "plants": {
+    "pothos": {
+      "common_name": "Golden Pothos",
+      "scientific_name": "Epipremnum aureum",
+      "humidity_min": 40,
+      "humidity_max": 60,
+      "watering_interval": 7,
+      "difficulty": "easy",
+      "description": "Low maintenance trailing plant, perfect for beginners"
+    },
+    "snake_plant": {
+      "common_name": "Snake Plant",
+      "scientific_name": "Sansevieria trifasciata",
+      "humidity_min": 20,
+      "humidity_max": 40,
+      "watering_interval": 14,
+      "difficulty": "easy",
+      "description": "Extremely drought tolerant, thrives on neglect"
+    },
+    "spider_plant": {
+      "common_name": "Spider Plant",
+      "scientific_name": "Chlorophytum comosum",
+      "humidity_min": 35,
+      "humidity_max": 55,
+      "watering_interval": 7,
+      "difficulty": "easy",
+      "description": "Fast growing plant that produces baby plantlets"
+    },
+    "peace_lily": {
+      "common_name": "Peace Lily",
+      "scientific_name": "Spathiphyllum",
+      "humidity_min": 50,
+      "humidity_max": 70,
+      "watering_interval": 5,
+      "difficulty": "medium",
+      "description": "Beautiful white blooms, tells you when it needs water"
+    },
+    "rubber_tree": {
+      "common_name": "Rubber Tree",
+      "scientific_name": "Ficus elastica",
+      "humidity_min": 40,
+      "humidity_max": 60,
+      "watering_interval": 7,
+      "difficulty": "easy",
+      "description": "Glossy leaves, grows into a beautiful tree"
+    },
+    "monstera": {
+      "common_name": "Monstera Deliciosa",
+      "scientific_name": "Monstera deliciosa",
+      "humidity_min": 50,
+      "humidity_max": 70,
+      "watering_interval": 7,
+      "difficulty": "medium",
+      "description": "Iconic split leaves, Instagram favorite"
+    },
+    "zz_plant": {
+      "common_name": "ZZ Plant",
+      "scientific_name": "Zamioculcas zamiifolia",
+      "humidity_min": 20,
+      "humidity_max": 40,
+      "watering_interval": 14,
+      "difficulty": "easy",
+      "description": "Virtually indestructible, tolerates low light"
+    },
+    "fiddle_leaf_fig": {
+      "common_name": "Fiddle Leaf Fig",
+      "scientific_name": "Ficus lyrata",
+      "humidity_min": 45,
+      "humidity_max": 65,
+      "watering_interval": 7,
+      "difficulty": "hard",
+      "description": "Dramatic large leaves, needs consistent care"
+    },
+    "philodendron": {
+      "common_name": "Heartleaf Philodendron",
+      "scientific_name": "Philodendron hederaceum",
+      "humidity_min": 40,
+      "humidity_max": 60,
+      "watering_interval": 7,
+      "difficulty": "easy",
+      "description": "Heart-shaped leaves, easy trailing plant"
+    },
+    "aloe_vera": {
+      "common_name": "Aloe Vera",
+      "scientific_name": "Aloe barbadensis",
+      "humidity_min": 20,
+      "humidity_max": 35,
+      "watering_interval": 10,
+      "difficulty": "easy",
+      "description": "Medicinal succulent, very drought tolerant"
+    },
+    "boston_fern": {
+      "common_name": "Boston Fern",
+      "scientific_name": "Nephrolepis exaltata",
+      "humidity_min": 60,
+      "humidity_max": 80,
+      "watering_interval": 3,
+      "difficulty": "medium",
+      "description": "Lush fronds, loves high humidity"
+    },
+    "english_ivy": {
+      "common_name": "English Ivy",
+      "scientific_name": "Hedera helix",
+      "humidity_min": 40,
+      "humidity_max": 60,
+      "watering_interval": 5,
+      "difficulty": "medium",
+      "description": "Classic climbing plant, air purifying"
+    },
+    "jade_plant": {
+      "common_name": "Jade Plant",
+      "scientific_name": "Crassula ovata",
+      "humidity_min": 20,
+      "humidity_max": 40,
+      "watering_interval": 10,
+      "difficulty": "easy",
+      "description": "Lucky plant, thick succulent leaves"
+    },
+    "dracaena": {
+      "common_name": "Dracaena",
+      "scientific_name": "Dracaena marginata",
+      "humidity_min": 40,
+      "humidity_max": 60,
+      "watering_interval": 7,
+      "difficulty": "easy",
+      "description": "Spiky leaves, tolerates neglect well"
+    },
+    "calathea": {
+      "common_name": "Calathea",
+      "scientific_name": "Calathea orbifolia",
+      "humidity_min": 60,
+      "humidity_max": 80,
+      "watering_interval": 5,
+      "difficulty": "hard",
+      "description": "Prayer plant with stunning patterned leaves"
+    },
+    "bird_of_paradise": {
+      "common_name": "Bird of Paradise",
+      "scientific_name": "Strelitzia reginae",
+      "humidity_min": 50,
+      "humidity_max": 70,
+      "watering_interval": 7,
+      "difficulty": "medium",
+      "description": "Tropical plant with large paddle leaves"
+    },
+    "haworthia": {
+      "common_name": "Haworthia",
+      "scientific_name": "Haworthia fasciata",
+      "humidity_min": 20,
+      "humidity_max": 35,
+      "watering_interval": 12,
+      "difficulty": "easy",
+      "description": "Small succulent with white stripes"
+    },
+    "pilea": {
+      "common_name": "Chinese Money Plant",
+      "scientific_name": "Pilea peperomioides",
+      "humidity_min": 40,
+      "humidity_max": 60,
+      "watering_interval": 7,
+      "difficulty": "easy",
+      "description": "Round coin-shaped leaves, easy to propagate"
+    },
+    "schefflera": {
+      "common_name": "Umbrella Tree",
+      "scientific_name": "Schefflera arboricola",
+      "humidity_min": 40,
+      "humidity_max": 60,
+      "watering_interval": 7,
+      "difficulty": "easy",
+      "description": "Glossy compound leaves in umbrella pattern"
+    },
+    "christmas_cactus": {
+      "common_name": "Christmas Cactus",
+      "scientific_name": "Schlumbergera bridgesi",
+      "humidity_min": 30,
+      "humidity_max": 50,
+      "watering_interval": 7,
+      "difficulty": "medium",
+      "description": "Blooms during winter holidays"
+    }
+  }
+}

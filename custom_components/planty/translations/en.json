@@ -1,0 +1,96 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Set up Planty Plant Manager",
+        "description": "Welcome to Planty! This integration helps you keep track of your houseplants' watering schedule.\n\nPlanty includes a database of {plant_count} common houseplants with their optimal watering schedules and soil humidity levels.\n\nYou can track your plants using:\n- Manual countdown timers\n- Soil humidity sensors\n- Custom plant configurations\n\nClick Submit to continue with setup."
+      },
+      "add_plant": {
+        "title": "Add Your First Plant",
+        "description": "Let's add your first plant to monitor.\n\nYou can choose from our plant database or create a custom plant. If you have soil humidity sensors ({available_sensors} detected), you can use sensor-based monitoring instead of manual countdowns.",
+        "data": {
+          "plant_type": "Plant Type",
+          "custom_name": "Custom Plant Name",
+          "watering_mode": "Watering Mode", 
+          "humidity_sensor": "Humidity Sensor",
+          "watering_interval": "Watering Interval (days)"
+        }
+      },
+      "add_plant_success": {
+        "title": "Plant Added Successfully!",
+        "description": "Great! {plant_name} has been added to your plant collection.\n\nWould you like to add another plant?",
+        "data": {
+          "add_another": "Add Another Plant"
+        }
+      }
+    },
+    "error": {
+      "custom_name_required": "Custom plant name is required when plant type is 'Custom Plant'.",
+      "sensor_required": "A humidity sensor must be selected when using sensor mode."
+    },
+    "abort": {
+      "already_configured": "Planty is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Planty Options",
+        "description": "Configure Planty integration options.",
+        "data": {
+          "auto_dashboard": "Automatically create 'My Plants' dashboard",
+          "default_image_crop": "Enable default image cropping for plant cards"
+        }
+      }
+    }
+  },
+  "services": {
+    "water_plant": {
+      "name": "Water Plant",
+      "description": "Mark a plant as watered and reset the watering countdown."
+    },
+    "add_plant": {
+      "name": "Add Plant", 
+      "description": "Add a new plant to monitor."
+    },
+    "remove_plant": {
+      "name": "Remove Plant",
+      "description": "Remove a plant from monitoring."
+    },
+    "update_plant_image": {
+      "name": "Update Plant Image",
+      "description": "Update the background image for a plant card."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "humidity": {
+        "name": "Soil Humidity"
+      },
+      "days_until_water": {
+        "name": "Days Until Watering"
+      },
+      "last_watered": {
+        "name": "Last Watered"
+      },
+      "water_status": {
+        "name": "Water Status"
+      }
+    },
+    "button": {
+      "water": {
+        "name": "Water"
+      }
+    }
+  },
+  "state": {
+    "sensor": {
+      "water_status": {
+        "healthy": "Healthy",
+        "needs_water": "Needs Water",
+        "overdue": "Overdue",
+        "unknown": "Unknown"
+      }
+    }
+  }
+}

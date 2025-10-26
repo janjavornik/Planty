@@ -1,0 +1,127 @@
+# Example automations for Planty integration
+
+# Send notification when any plant needs watering
+- alias: "Plant Watering Reminder"
+  description: "Notify when plants need water"
+  trigger:
+    - platform: state
+      entity_id: 
+        - sensor.pothos_water_status
+        - sensor.snake_plant_water_status
+        - sensor.peace_lily_water_status
+      to: "needs_water"
+  condition:
+    - condition: time
+      after: "08:00:00"
+      before: "20:00:00"
+  action:
+    - service: notify.mobile_app_your_phone
+      data:
+        title: "🌱 Plant Care Reminder"
+        message: "{{ trigger.to_state.name }} needs watering!"
+        data:
+          actions:
+            - action: "water_{{ trigger.entity_id.split('.')[1].split('_')[0] }}"
+              title: "Mark as Watered"
+
+# Water plant from notification action
+- alias: "Water Plant from Notification"
+  description: "Water plant when notification action is tapped"
+  trigger:
+    - platform: event
+      event_type: mobile_app_notification_action
+      event_data:
+        action: "water_pothos"
+  action:
+    - service: planty.water_plant
+      data:
+        plant_id: "pothos"
+
+# Weekly plant care report
+- alias: "Weekly Plant Status Report"
+  description: "Send weekly summary of all plants"
+  trigger:
+    - platform: time
+      at: "09:00:00"
+  condition:
+    - condition: time
+      weekday:
+        - sun
+  action:
+    - service: notify.mobile_app_your_phone
+      data:
+        title: "🌿 Weekly Plant Report"
+        message: >
+          Plant Status Summary:
+          {% for state in states.sensor %}
+            {% if state.entity_id.endswith('_water_status') %}
+              • {{ state.name.replace(' Water Status', '') }}: {{ state.state | title }}
+            {% endif %}
+          {% endfor %}
+
+# Turn on grow lights when plants need attention
+- alias: "Grow Light Plant Care"
+  description: "Turn on grow lights when plants are overdue"
+  trigger:
+    - platform: state
+      entity_id: 
+        - sensor.fiddle_leaf_fig_water_status
+        - sensor.monstera_water_status
+      to: "overdue"
+  action:
+    - service: light.turn_on
+      target:
+        entity_id: light.grow_lights
+      data:
+        brightness_pct: 80
+        color_name: "purple"
+
+# Log plant watering to calendar
+- alias: "Log Plant Watering to Calendar"
+  description: "Create calendar event when plant is watered"
+  trigger:
+    - platform: event
+      event_type: planty_plant_watered
+  action:
+    - service: calendar.create_event
+      target:
+        entity_id: calendar.plant_care
+      data:
+        summary: "🌱 Watered {{ trigger.event.data.plant_name | default(trigger.event.data.plant_id) }}"
+        start_date_time: "{{ now().isoformat() }}"
+        end_date_time: "{{ (now() + timedelta(minutes=5)).isoformat() }}"
+
+# Smart watering based on weather
+- alias: "Skip Watering on Rainy Days"
+  description: "Delay watering reminders during rainy weather"
+  trigger:
+    - platform: state
+      entity_id: 
+        - sensor.pothos_water_status
+      to: "needs_water"
+  condition:
+    - condition: state
+      entity_id: weather.home
+      state: "rainy"
+  action:
+    - service: input_datetime.set_datetime
+      target:
+        entity_id: input_datetime.next_plant_check
+      data:
+        datetime: "{{ (now() + timedelta(days=1)).isoformat() }}"
+
+# Voice assistant integration
+- alias: "Ask About Plant Status"
+  description: "Respond to voice queries about plant health"
+  trigger:
+    - platform: conversation
+      command: "How are my plants doing"
+  action:
+    - service: tts.speak
+      data:
+        entity_id: media_player.living_room_speaker
+        message: >
+          {% set healthy = states.sensor | selectattr('entity_id', 'match', '.*_water_status$') | selectattr('state', 'eq', 'healthy') | list | length %}
+          {% set needs_water = states.sensor | selectattr('entity_id', 'match', '.*_water_status$') | selectattr('state', 'eq', 'needs_water') | list | length %}
+          {% set overdue = states.sensor | selectattr('entity_id', 'match', '.*_water_status$') | selectattr('state', 'eq', 'overdue') | list | length %}
+          You have {{ healthy }} healthy plants, {{ needs_water }} plants that need water, and {{ overdue }} plants that are overdue for watering.

@@ -1,0 +1,133 @@
+# Example Mushroom card configuration for individual plants
+# Use this as a template to create custom plant cards
+
+type: custom:mushroom-template-card
+primary: "{{ states('input_text.pothos_name') or 'Golden Pothos' }}"
+secondary: >
+  {% set status = states('sensor.pothos_water_status') %}
+  {% set days = states('sensor.pothos_days_until_water') | int(0) %}
+  {% if status == 'healthy' %}
+    {% if days > 1 %}
+      Water in {{ days }} days
+    {% else %}
+      Water tomorrow
+    {% endif %}
+  {% elif status == 'needs_water' %}
+    Needs watering now!
+  {% elif status == 'overdue' %}
+    {{ days * -1 }} day(s) overdue
+  {% else %}
+    Status unknown
+  {% endif %}
+icon: >
+  {% set status = states('sensor.pothos_water_status') %}
+  {% if status == 'healthy' %}
+    mdi:sprout
+  {% elif status == 'needs_water' %}
+    mdi:water-alert
+  {% elif status == 'overdue' %}
+    mdi:water-off
+  {% else %}
+    mdi:help-circle
+  {% endif %}
+icon_color: >
+  {% set status = states('sensor.pothos_water_status') %}
+  {% if status == 'healthy' %}
+    green
+  {% elif status == 'needs_water' %}
+    orange
+  {% elif status == 'overdue' %}
+    red
+  {% else %}
+    grey
+  {% endif %}
+picture: /local/planty/pothos.jpg
+fill_container: true
+layout: vertical
+tap_action:
+  action: more-info
+  entity: sensor.pothos_water_status
+hold_action:
+  action: call-service
+  service: planty.water_plant
+  service_data:
+    plant_id: "pothos"
+  confirmation:
+    text: "Mark Pothos as watered?"
+double_tap_action:
+  action: navigate
+  navigation_path: /config/integrations/integration/planty
+card_mod:
+  style: |
+    ha-card {
+      background: linear-gradient(
+        135deg,
+        rgba(0,0,0,0.4) 0%,
+        rgba(0,0,0,0.1) 100%
+      ), var(--card-background-color);
+      background-size: cover;
+      background-position: center;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .content {
+      color: white;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+    }
+    .primary {
+      font-weight: bold;
+      font-size: 1.2em;
+    }
+    .secondary {
+      opacity: 0.9;
+    }
+
+---
+# Grid layout for multiple plant cards
+type: custom:grid-layout
+layout:
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr))
+  grid-gap: 16px
+  margin: 16px
+
+cards:
+  # Pothos card
+  - type: custom:mushroom-template-card
+    # ... (use config above)
+  
+  # Snake Plant card  
+  - type: custom:mushroom-template-card
+    primary: "Snake Plant"
+    secondary: >
+      {% set days = states('sensor.snake_plant_days_until_water') | int(0) %}
+      {% if days > 0 %}
+        Water in {{ days }} days
+      {% else %}
+        Needs water!
+      {% endif %}
+    icon: mdi:cactus
+    icon_color: green
+    picture: /local/planty/snake_plant.jpg
+    # ... (similar actions)
+
+---
+# Complete dashboard view with header
+type: vertical-stack
+cards:
+  # Header card
+  - type: custom:mushroom-title-card
+    title: My Plant Collection
+    subtitle: "{{ states.sensor | selectattr('entity_id', 'match', '.*_water_status$') | selectattr('state', 'eq', 'needs_water') | list | length }} plants need attention"
+    alignment: center
+    title_tap_action:
+      action: navigate
+      navigation_path: /config/integrations/integration/planty
+
+  # Plant grid
+  - type: custom:grid-layout
+    layout:
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr))
+      grid-gap: 16px
+      padding: 16px
+    cards:
+      # Add your plant cards here using the template above
