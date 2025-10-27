@@ -24,8 +24,13 @@ from .const import (
     SERVICE_ADD_PLANT,
     SERVICE_REMOVE_PLANT,
     SERVICE_UPDATE_IMAGE,
+    SERVICE_ADD_PLANT_TO_DASHBOARD,
+    SERVICE_REMOVE_PLANT_FROM_DASHBOARD,
+    SERVICE_WATER_PLANT_CUSTOM_DATE,
+    SERVICE_UPDATE_PLANT_SETTINGS,
 )
 from .image import async_setup_image_handler
+from .dashboard_manager import async_setup_dashboard
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -47,6 +52,21 @@ ADD_PLANT_SCHEMA = vol.Schema({
 UPDATE_IMAGE_SCHEMA = vol.Schema({
     vol.Required("plant_id"): cv.string,
     vol.Required("image_path"): cv.string,
+})
+
+WATER_PLANT_CUSTOM_DATE_SCHEMA = vol.Schema({
+    vol.Required("plant_id"): cv.string,
+    vol.Required("watered_date"): cv.string,
+})
+
+UPDATE_PLANT_SETTINGS_SCHEMA = vol.Schema({
+    vol.Required("plant_id"): cv.string,
+    vol.Optional("name"): cv.string,
+    vol.Optional("plant_type"): cv.string,
+    vol.Optional("watering_mode"): vol.In(["sensor", "manual"]),
+    vol.Optional("humidity_sensor"): cv.entity_id,
+    vol.Optional("watering_interval"): cv.positive_int,
+    vol.Optional("image_path"): cv.string,
 })
 
 
@@ -93,6 +113,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # Set up image handler
     image_handler = await async_setup_image_handler(hass)
     
+    # Set up dashboard manager
+    dashboard_manager = await async_setup_dashboard(hass, entry)
+    
+    # Register frontend resources
+    await async_register_frontend_resources(hass)
+    
     # Store data in hass.data
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][entry.entry_id] = {
@@ -100,6 +126,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         "plants_db": plants_db,
         "config": entry.data,
         "image_handler": image_handler,
+        "dashboard_manager": dashboard_manager,
     }
     
     # Set up platforms
@@ -181,6 +208,10 @@ async def async_register_services(hass: HomeAssistant, entry: ConfigEntry) -> No
         
         await storage.async_save()
         
+        # Update dashboard
+        dashboard_manager = hass.data[DOMAIN][entry.entry_id]["dashboard_manager"]
+        await dashboard_manager.async_update_dashboard()
+        
         # Reload the integration to create new entities
         await hass.config_entries.async_reload(entry.entry_id)
     
@@ -198,6 +229,38 @@ async def async_register_services(hass: HomeAssistant, entry: ConfigEntry) -> No
             # Fire event to update entities
             hass.bus.async_fire(f"{DOMAIN}_plant_updated", {"plant_id": plant_id})
     
+    async def water_plant_custom_date_service(call: ServiceCall) -> None:
+        """Handle water plant with custom date service call."""
+        plant_id = call.data["plant_id"]
+        watered_date = call.data["watered_date"]
+        
+        storage = hass.data[DOMAIN][entry.entry_id]["storage"]
+        
+        if "plants" in storage.data and plant_id in storage.data["plants"]:
+            storage.data["plants"][plant_id]["last_watered"] = watered_date
+            await storage.async_save()
+            
+            # Fire event to update entities
+            hass.bus.async_fire(f"{DOMAIN}_plant_watered", {"plant_id": plant_id})
+    
+    async def update_plant_settings_service(call: ServiceCall) -> None:
+        """Handle update plant settings service call."""
+        plant_id = call.data["plant_id"]
+        settings = {k: v for k, v in call.data.items() if k != "plant_id"}
+        
+        storage = hass.data[DOMAIN][entry.entry_id]["storage"]
+        
+        if "plants" in storage.data and plant_id in storage.data["plants"]:
+            storage.data["plants"][plant_id].update(settings)
+            await storage.async_save()
+            
+            # Update dashboard
+            dashboard_manager = hass.data[DOMAIN][entry.entry_id]["dashboard_manager"]
+            await dashboard_manager.async_update_dashboard()
+            
+            # Fire event to update entities
+            hass.bus.async_fire(f"{DOMAIN}_plant_updated", {"plant_id": plant_id})
+    
     # Register services
     hass.services.async_register(
         DOMAIN, SERVICE_WATER_PLANT, water_plant_service, schema=WATER_PLANT_SCHEMA
@@ -207,6 +270,12 @@ async def async_register_services(hass: HomeAssistant, entry: ConfigEntry) -> No
     )
     hass.services.async_register(
         DOMAIN, SERVICE_UPDATE_IMAGE, update_image_service, schema=UPDATE_IMAGE_SCHEMA
+    )
+    hass.services.async_register(
+        DOMAIN, SERVICE_WATER_PLANT_CUSTOM_DATE, water_plant_custom_date_service, schema=WATER_PLANT_CUSTOM_DATE_SCHEMA
+    )
+    hass.services.async_register(
+        DOMAIN, SERVICE_UPDATE_PLANT_SETTINGS, update_plant_settings_service, schema=UPDATE_PLANT_SETTINGS_SCHEMA
     )
 
 
@@ -219,3 +288,31 @@ def get_plant_data(hass: HomeAssistant, entry_id: str, plant_id: str) -> dict[st
 def get_plant_database(hass: HomeAssistant, entry_id: str) -> dict[str, Any]:
     """Get the plants database."""
     return hass.data[DOMAIN][entry_id]["plants_db"]
+
+
+async def async_register_frontend_resources(hass: HomeAssistant) -> None:
+    """Register frontend resources."""
+    from homeassistant.components.frontend import add_extra_js_url
+    
+    # Register the main Planty JavaScript module
+    add_extra_js_url(hass, "/planty_static/planty.js")
+    
+    # Register individual card files as well for fallback
+    card_files = [
+        "planty-card.js",
+        "planty-header-card.js", 
+        "planty-settings-card.js",
+        "planty-welcome-card.js"
+    ]
+    
+    for card_file in card_files:
+        add_extra_js_url(hass, f"/planty_static/{card_file}")
+    
+    # Register static file handler
+    import os
+    integration_path = os.path.dirname(__file__)
+    www_path = os.path.join(integration_path, "www")
+    
+    hass.http.register_static_path(
+        "/planty_static", www_path, cache_headers=False
+    )

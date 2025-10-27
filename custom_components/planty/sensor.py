@@ -159,6 +159,8 @@ class PlantDaysUntilWaterSensor(PlantSensorBase):
         attrs = {
             "watering_interval": plant_data.get("watering_interval", 7),
             "watering_mode": plant_data.get("watering_mode", "manual"),
+            "progress_percentage": self._calculate_progress_percentage(),
+            "color_state": self._get_color_state(),
         }
 
         last_watered_str = plant_data.get("last_watered")
@@ -172,6 +174,38 @@ class PlantDaysUntilWaterSensor(PlantSensorBase):
                 pass
 
         return attrs
+    
+    def _calculate_progress_percentage(self) -> int:
+        """Calculate progress percentage for progress bar."""
+        plant_data = get_plant_data(self.hass, self._config_entry.entry_id, self._plant_id)
+        if not plant_data:
+            return 0
+
+        last_watered_str = plant_data.get("last_watered")
+        if not last_watered_str:
+            return 100  # Needs water immediately
+
+        try:
+            last_watered = datetime.fromisoformat(last_watered_str)
+            watering_interval = plant_data.get("watering_interval", 7)
+            days_passed = (datetime.now() - last_watered).days
+            
+            # Calculate percentage (0% = just watered, 100% = needs water)
+            percentage = min(100, max(0, (days_passed / watering_interval) * 100))
+            return int(percentage)
+        except (ValueError, TypeError):
+            return 0
+    
+    def _get_color_state(self) -> str:
+        """Get color state for the progress bar."""
+        progress = self._calculate_progress_percentage()
+        
+        if progress >= 100:
+            return "red"  # Needs water now
+        elif progress >= 80:
+            return "orange"  # Watering soon
+        else:
+            return "green"  # Happy camper
 
 
 class PlantLastWateredSensor(PlantSensorBase):
@@ -299,6 +333,123 @@ class PlantWaterStatusSensor(PlantSensorBase):
             return "mdi:water-off"
         else:
             return "mdi:water-unknown"
+    
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return extra state attributes."""
+        plant_data = get_plant_data(self.hass, self._config_entry.entry_id, self._plant_id)
+        if not plant_data:
+            return {}
+
+        attrs = {
+            "plant_id": self._plant_id,
+            "watering_mode": plant_data.get("watering_mode", "manual"),
+            "progress_percentage": self._calculate_progress_percentage(),
+            "color_state": self._get_color_state(),
+        }
+
+        # Add sensor-specific attributes
+        if plant_data.get("watering_mode") == WATERING_MODE_SENSOR:
+            humidity_sensor = plant_data.get("humidity_sensor")
+            if humidity_sensor:
+                humidity_state = self.hass.states.get(humidity_sensor)
+                if humidity_state and humidity_state.state != "unavailable":
+                    try:
+                        attrs["current_humidity"] = float(humidity_state.state)
+                    except (ValueError, TypeError):
+                        pass
+                attrs["humidity_sensor"] = humidity_sensor
+        else:
+            # Manual mode attributes
+            attrs["watering_interval"] = plant_data.get("watering_interval", 7)
+            last_watered_str = plant_data.get("last_watered")
+            if last_watered_str:
+                try:
+                    last_watered = datetime.fromisoformat(last_watered_str)
+                    days_since_watered = (datetime.now() - last_watered).days
+                    attrs["days_since_watered"] = days_since_watered
+                except (ValueError, TypeError):
+                    pass
+
+        return attrs
+    
+    def _calculate_progress_percentage(self) -> int:
+        """Calculate progress percentage for progress bar."""
+        plant_data = get_plant_data(self.hass, self._config_entry.entry_id, self._plant_id)
+        if not plant_data:
+            return 0
+
+        if plant_data.get("watering_mode") == WATERING_MODE_SENSOR:
+            return self._calculate_sensor_progress(plant_data)
+        else:
+            return self._calculate_manual_progress(plant_data)
+    
+    def _calculate_sensor_progress(self, plant_data: dict[str, Any]) -> int:
+        """Calculate progress for sensor mode."""
+        humidity_sensor = plant_data.get("humidity_sensor")
+        if not humidity_sensor:
+            return 0
+
+        humidity_state = self.hass.states.get(humidity_sensor)
+        if not humidity_state or humidity_state.state == "unavailable":
+            return 0
+
+        try:
+            current_humidity = float(humidity_state.state)
+            
+            # Get plant type thresholds
+            plants_db = get_plant_database(self.hass, self._config_entry.entry_id)
+            plant_type = plant_data.get("type")
+            
+            if plant_type and plant_type in plants_db.get("plants", {}):
+                plant_info = plants_db["plants"][plant_type]
+                humidity_min = plant_info.get("humidity_min", 30)
+                humidity_max = plant_info.get("humidity_max", 70)
+            else:
+                humidity_min = 30
+                humidity_max = 70
+            
+            # Calculate inverse percentage (lower humidity = higher progress)
+            optimal_range = humidity_max - humidity_min
+            if current_humidity >= humidity_max:
+                return 0  # Too wet, no watering needed
+            elif current_humidity <= humidity_min:
+                return 100  # Needs water
+            else:
+                # Linear scale from optimal to needs water
+                progress = ((humidity_max - current_humidity) / optimal_range) * 100
+                return int(min(100, max(0, progress)))
+                
+        except (ValueError, TypeError):
+            return 0
+    
+    def _calculate_manual_progress(self, plant_data: dict[str, Any]) -> int:
+        """Calculate progress for manual mode."""
+        last_watered_str = plant_data.get("last_watered")
+        if not last_watered_str:
+            return 100  # Needs water immediately
+
+        try:
+            last_watered = datetime.fromisoformat(last_watered_str)
+            watering_interval = plant_data.get("watering_interval", 7)
+            days_passed = (datetime.now() - last_watered).days
+            
+            # Calculate percentage (0% = just watered, 100% = needs water)
+            percentage = min(100, max(0, (days_passed / watering_interval) * 100))
+            return int(percentage)
+        except (ValueError, TypeError):
+            return 0
+    
+    def _get_color_state(self) -> str:
+        """Get color state for the progress bar."""
+        progress = self._calculate_progress_percentage()
+        
+        if progress >= 100:
+            return "red"  # Needs water now
+        elif progress >= 80:
+            return "orange"  # Watering soon
+        else:
+            return "green"  # Happy camper
 
 
 class PlantHumiditySensor(PlantSensorBase):

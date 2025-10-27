@@ -72,3 +72,77 @@ update_plant_image:
       required: true
       selector:
         text:
+
+water_plant_custom_date:
+  name: Water Plant (Custom Date)
+  description: Mark a plant as watered with a custom date
+  fields:
+    plant_id:
+      name: Plant ID
+      description: The ID of the plant to water
+      required: true
+      selector:
+        text:
+    watered_date:
+      name: Watered Date
+      description: The date when the plant was watered (ISO format)
+      required: true
+      selector:
+        datetime:
+
+update_plant_settings:
+  name: Update Plant Settings
+  description: Update settings for an existing plant
+  fields:
+    plant_id:
+      name: Plant ID
+      description: The ID of the plant to update
+      required: true
+      selector:
+        text:
+    name:
+      name: Plant Name
+      description: New name for the plant
+      required: false
+      selector:
+        text:
+    plant_type:
+      name: Plant Type
+      description: Type of plant (from the plant database)
+      required: false
+      selector:
+        text:
+    watering_mode:
+      name: Watering Mode
+      description: How to track watering (manual timer or humidity sensor)
+      required: false
+      selector:
+        select:
+          options:
+            - label: Manual (Timer-based)
+              value: manual
+            - label: Sensor (Humidity-based)
+              value: sensor
+    humidity_sensor:
+      name: Humidity Sensor
+      description: Entity ID of humidity sensor (for sensor mode)
+      required: false
+      selector:
+        entity:
+          domain: sensor
+          device_class: humidity
+    watering_interval:
+      name: Watering Interval
+      description: Days between watering (for manual mode)
+      required: false
+      selector:
+        number:
+          min: 1
+          max: 30
+          unit_of_measurement: days
+    image_path:
+      name: Image Path
+      description: Path to the plant image
+      required: false
+      selector:
+        text:

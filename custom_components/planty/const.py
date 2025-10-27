@@ -28,6 +28,10 @@ SERVICE_WATER_PLANT = "water_plant"
 SERVICE_ADD_PLANT = "add_plant"
 SERVICE_REMOVE_PLANT = "remove_plant"
 SERVICE_UPDATE_IMAGE = "update_plant_image"
+SERVICE_ADD_PLANT_TO_DASHBOARD = "add_plant_to_dashboard"
+SERVICE_REMOVE_PLANT_FROM_DASHBOARD = "remove_plant_from_dashboard"
+SERVICE_WATER_PLANT_CUSTOM_DATE = "water_plant_custom_date"
+SERVICE_UPDATE_PLANT_SETTINGS = "update_plant_settings"
 
 # Entity types
 SENSOR_TYPES = {
