@@ -49,16 +49,8 @@ class DashboardManager:
     
     async def _create_simple_notification(self) -> None:
         """Create a simple notification about manual dashboard setup."""
-        await self.hass.services.async_call(
-            "persistent_notification",
-            "create",
-            {
-                "message": "Planty integration is ready! You can create plant sensors using the planty.add_plant service. "
-                          "Check the Planty integration page for more details.",
-                "title": "Planty Setup Complete",
-                "notification_id": "planty_setup"
-            }
-        )
+        # This is now handled in _register_dashboard method
+        pass
     
     async def async_update_dashboard(self) -> None:
         """Update the dashboard with current plants."""
@@ -138,56 +130,38 @@ class DashboardManager:
     
     async def _register_dashboard(self, dashboard_config: Dict[str, Any]) -> None:
         """Register the dashboard with Home Assistant."""
-        # Store dashboard config
-        await self._store.async_save(dashboard_config)
-        
+        # Store dashboard config for future use
         try:
-            # Use frontend panel registration - more reliable
-            from homeassistant.components import frontend
-            
-            # Register as a panel first
-            frontend.async_register_built_in_panel(
-                self.hass,
-                "lovelace",
-                DASHBOARD_TITLE,
-                DASHBOARD_ICON,
-                DASHBOARD_URL_PATH,
-                {"mode": "yaml"},
-                require_admin=False,
-                sidebar_title=DASHBOARD_TITLE,
-                sidebar_icon=DASHBOARD_ICON,
-                url_path=DASHBOARD_URL_PATH
-            )
-            
-            _LOGGER.info("Successfully registered My Plants dashboard as panel")
-            
+            await self._store.async_save(dashboard_config)
+            _LOGGER.debug("Saved dashboard config to storage")
         except Exception as err:
-            _LOGGER.warning("Panel registration failed, trying lovelace method: %s", err)
-            
-            try:
-                # Fallback to lovelace registration
-                if "lovelace" not in self.hass.data:
-                    self.hass.data["lovelace"] = {}
-                if "dashboards" not in self.hass.data["lovelace"]:
-                    self.hass.data["lovelace"]["dashboards"] = {}
-                
-                # Use a unique key to avoid conflicts
-                dashboard_key = f"planty_{DASHBOARD_URL_PATH}"
-                self.hass.data["lovelace"]["dashboards"][dashboard_key] = {
-                    "mode": "yaml", 
-                    "title": DASHBOARD_TITLE,
-                    "icon": DASHBOARD_ICON,
-                    "show_in_sidebar": True,
-                    "require_admin": False,
-                    "url_path": DASHBOARD_URL_PATH,
-                    "config": dashboard_config
+            _LOGGER.warning("Failed to save dashboard config: %s", err)
+        
+        # For now, just create a notification instead of trying complex registration
+        # This avoids the registration errors while still providing functionality
+        try:
+            await self.hass.services.async_call(
+                "persistent_notification",
+                "create",
+                {
+                    "message": (
+                        "✅ **Planty is ready!**\n\n"
+                        "🌱 **Add your first plant:**\n"
+                        "Go to Developer Tools → Services and use:\n"
+                        "`planty.add_plant` with your plant details\n\n"
+                        "📊 **View plant sensors:**\n"
+                        "Check Developer Tools → States for new entities\n\n"
+                        "🎯 **Manual Dashboard:**\n"
+                        "Create a dashboard manually in Settings → Dashboards\n"
+                        "Then add custom `planty-card` cards for each plant"
+                    ),
+                    "title": "🌿 Planty Integration Ready",
+                    "notification_id": "planty_ready"
                 }
-                
-                _LOGGER.info("Successfully registered dashboard via lovelace fallback")
-                
-            except Exception as fallback_err:
-                _LOGGER.error("All dashboard registration methods failed: %s", fallback_err)
-                # Don't re-raise - let the integration continue without dashboard
+            )
+            _LOGGER.info("Created Planty setup notification")
+        except Exception as notif_err:
+            _LOGGER.warning("Failed to create setup notification: %s", notif_err)
     
     async def _register_with_frontend(self, dashboard_config: Dict[str, Any]) -> None:
         """Fallback method to register dashboard with frontend."""

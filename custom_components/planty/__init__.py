@@ -307,42 +307,72 @@ def get_plant_database(hass: HomeAssistant, entry_id: str) -> dict[str, Any]:
 async def async_register_frontend_resources(hass: HomeAssistant) -> None:
     """Register frontend resources."""
     try:
-        # Register static file handler first
         import os
+        
+        # Get integration path
         integration_path = os.path.dirname(__file__)
         www_path = os.path.join(integration_path, "www")
         
-        if os.path.exists(www_path):
-            hass.http.register_static_path(
-                "/planty_static", www_path, cache_headers=False
-            )
-            _LOGGER.info("Registered static path: %s", www_path)
-        else:
+        if not os.path.exists(www_path):
             _LOGGER.warning("WWW path not found: %s", www_path)
             return
         
-        # Register frontend resources if available
+        # Try different methods to register static path
+        static_registered = False
+        
+        # Method 1: Use hass.http.register_static_path directly (if available)
+        try:
+            if hasattr(hass.http, 'register_static_path'):
+                hass.http.register_static_path("/planty_static", www_path, cache_headers=False)
+                _LOGGER.info("Registered static path via hass.http method")
+                static_registered = True
+        except Exception as err:
+            _LOGGER.debug("hass.http.register_static_path failed: %s", err)
+        
+        # Method 2: Use homeassistant.components.http
+        if not static_registered:
+            try:
+                from homeassistant.components.http import StaticPathConfig
+                from homeassistant.components.http.static import _async_register_static_paths
+                
+                await _async_register_static_paths(hass, "/planty_static", www_path)
+                _LOGGER.info("Registered static path via http component")
+                static_registered = True
+            except Exception as err:
+                _LOGGER.debug("HTTP component registration failed: %s", err)
+        
+        # Method 3: Simple file serving (manual)
+        if not static_registered:
+            _LOGGER.warning("Could not register static path automatically")
+            # Continue anyway - files might be served through other means
+        
+        # Register frontend resources (this is separate from static path)
         try:
             from homeassistant.components.frontend import add_extra_js_url
             
-            # Register individual card files
-            card_files = [
-                "planty-card.js",
-                "planty-header-card.js", 
-                "planty-settings-card.js",
-                "planty-welcome-card.js"
-            ]
-            
-            for card_file in card_files:
-                card_path = os.path.join(www_path, card_file)
-                if os.path.exists(card_path):
-                    add_extra_js_url(hass, f"/planty_static/{card_file}")
-                    _LOGGER.debug("Registered card: %s", card_file)
-                else:
-                    _LOGGER.warning("Card file not found: %s", card_path)
+            # Only register if we successfully registered static path
+            if static_registered:
+                card_files = [
+                    "planty-card.js",
+                    "planty-header-card.js", 
+                    "planty-settings-card.js", 
+                    "planty-welcome-card.js"
+                ]
+                
+                for card_file in card_files:
+                    card_path = os.path.join(www_path, card_file)
+                    if os.path.exists(card_path):
+                        add_extra_js_url(hass, f"/planty_static/{card_file}")
+                        _LOGGER.info("Registered frontend resource: %s", card_file)
+                    else:
+                        _LOGGER.warning("Card file not found: %s", card_path)
+            else:
+                _LOGGER.info("Skipping frontend resource registration - static path not available")
             
         except ImportError as err:
-            _LOGGER.warning("Could not import frontend components: %s", err)
+            _LOGGER.warning("Could not import frontend add_extra_js_url: %s", err)
+        except Exception as err:
+            _LOGGER.warning("Frontend resource registration failed: %s", err)
             
     except Exception as err:
         _LOGGER.error("Failed to register frontend resources: %s", err)
