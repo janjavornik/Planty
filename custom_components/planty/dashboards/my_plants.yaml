@@ -1,0 +1,63 @@
+title: My Plants
+path: my-plants  
+icon: mdi:leaf
+panel: false
+cards:
+  - type: custom:mushroom-title-card
+    title: My Plants
+    subtitle: Plant Watering Manager
+  - type: grid
+    square: false
+    columns: 3
+    cards:
+      - type: custom:mushroom-entity-card
+        entity: sensor.planty_pothos_water_status
+        name: Pothos
+        icon: mdi:leaf
+        primary_info: name
+        secondary_info: state
+        tap_action:
+          action: call-service
+          service: planty.water_plant
+          service_data:
+            plant_id: pothos
+        card_mod:
+          style: |
+            ha-card {
+              background: linear-gradient(135deg, #81C784 0%, #4CAF50 100%);
+              color: white;
+            }
+      - type: custom:mushroom-entity-card  
+        entity: sensor.planty_snake_plant_water_status
+        name: Snake Plant
+        icon: mdi:cactus
+        primary_info: name
+        secondary_info: state
+        tap_action:
+          action: call-service
+          service: planty.water_plant
+          service_data:
+            plant_id: snake_plant
+        card_mod:
+          style: |
+            ha-card {
+              background: linear-gradient(135deg, #66BB6A 0%, #388E3C 100%);
+              color: white;
+            }
+      - type: custom:mushroom-entity-card
+        entity: sensor.planty_peace_lily_water_status  
+        name: Peace Lily
+        icon: mdi:flower
+        primary_info: name
+        secondary_info: state
+        tap_action:
+          action: call-service
+          service: planty.water_plant
+          service_data:
+            plant_id: peace_lily
+        card_mod:
+          style: |
+            ha-card {
+              background: linear-gradient(135deg, #A5D6A7 0%, #2E7D32 100%);
+              color: white;
+            }

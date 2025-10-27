@@ -1,0 +1,118 @@
+# Example Mushroom Cards for Planty
+
+# Single Plant Card
+type: custom:mushroom-entity-card
+entity: sensor.planty_pothos_water_status
+name: My Pothos
+icon: mdi:leaf
+primary_info: name
+secondary_info: state
+layout: vertical
+fill_container: false
+tap_action:
+  action: call-service
+  service: planty.water_plant
+  service_data:
+    plant_id: pothos
+card_mod:
+  style: |
+    ha-card {
+      background: linear-gradient(135deg, #81C784 0%, #4CAF50 100%);
+      color: white;
+      border-radius: 15px;
+    }
+
+---
+
+# Plant Grid Layout
+type: grid
+square: false
+columns: 2
+cards:
+  - type: custom:mushroom-entity-card
+    entity: sensor.planty_pothos_water_status
+    name: Pothos
+    icon: mdi:leaf
+    primary_info: name
+    secondary_info: state
+    tap_action:
+      action: call-service
+      service: planty.water_plant
+      service_data:
+        plant_id: pothos
+  - type: custom:mushroom-entity-card
+    entity: sensor.planty_snake_plant_water_status
+    name: Snake Plant
+    icon: mdi:cactus
+    primary_info: name
+    secondary_info: state
+    tap_action:
+      action: call-service
+      service: planty.water_plant
+      service_data:
+        plant_id: snake_plant
+
+---
+
+# Plant Details Card with Sensors
+type: vertical-stack
+cards:
+  - type: custom:mushroom-entity-card
+    entity: sensor.planty_monstera_water_status
+    name: Monstera Deliciosa
+    icon: mdi:leaf
+    primary_info: name
+    secondary_info: state
+    layout: horizontal
+  - type: horizontal-stack
+    cards:
+      - type: custom:mushroom-entity-card
+        entity: sensor.planty_monstera_days_until_water
+        name: Days Left
+        primary_info: state
+        secondary_info: name
+        layout: vertical
+        icon_color: blue
+      - type: custom:mushroom-entity-card
+        entity: sensor.planty_monstera_humidity
+        name: Humidity
+        primary_info: state
+        secondary_info: name
+        layout: vertical
+        icon_color: cyan
+  - type: custom:mushroom-entity-card
+    entity: button.planty_monstera_water
+    name: Water Plant
+    icon: mdi:water
+    layout: horizontal
+    tap_action:
+      action: toggle
+
+---
+
+# Plant Care Dashboard Section
+type: vertical-stack
+cards:
+  - type: custom:mushroom-title-card
+    title: Plant Care
+    subtitle: Watering Schedule & Status
+  - type: custom:mushroom-chips-card
+    chips:
+      - type: template
+        content: >
+          {% set healthy = states.sensor | selectattr('entity_id', 'match', 'sensor.planty_.*_water_status') | selectattr('state', 'eq', 'healthy') | list | count %}
+          {{ healthy }} Healthy
+        icon: mdi:water-check
+        icon_color: green
+      - type: template
+        content: >
+          {% set needs_water = states.sensor | selectattr('entity_id', 'match', 'sensor.planty_.*_water_status') | selectattr('state', 'eq', 'needs_water') | list | count %}
+          {{ needs_water }} Need Water
+        icon: mdi:water-alert
+        icon_color: orange
+      - type: template
+        content: >
+          {% set overdue = states.sensor | selectattr('entity_id', 'match', 'sensor.planty_.*_water_status') | selectattr('state', 'eq', 'overdue') | list | count %}
+          {{ overdue }} Overdue
+        icon: mdi:water-off
+        icon_color: red

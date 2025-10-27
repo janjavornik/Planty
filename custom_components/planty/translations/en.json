@@ -1,0 +1,73 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Set up Planty",
+        "description": "Set up your Planty plant watering manager",
+        "data": {
+          "name": "Name"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect",
+      "invalid_auth": "Invalid authentication",
+      "unknown": "Unexpected error"
+    },
+    "abort": {
+      "already_configured": "Service is already configured"
+    }
+  },
+  "services": {
+    "water_plant": {
+      "name": "Water Plant",
+      "description": "Mark a plant as watered",
+      "fields": {
+        "plant_id": {
+          "name": "Plant ID",
+          "description": "The ID of the plant to water"
+        }
+      }
+    },
+    "add_plant": {
+      "name": "Add Plant", 
+      "description": "Add a new plant to track",
+      "fields": {
+        "plant_name": {
+          "name": "Plant Name",
+          "description": "A friendly name for your plant"
+        },
+        "plant_type": {
+          "name": "Plant Type",
+          "description": "Type of plant (from the plant database)"
+        },
+        "watering_mode": {
+          "name": "Watering Mode",
+          "description": "How to track watering (manual timer or humidity sensor)"
+        },
+        "humidity_sensor": {
+          "name": "Humidity Sensor", 
+          "description": "Entity ID of humidity sensor (for sensor mode)"
+        },
+        "watering_interval": {
+          "name": "Watering Interval",
+          "description": "Days between watering (for manual mode)"
+        }
+      }
+    },
+    "update_plant_image": {
+      "name": "Update Plant Image",
+      "description": "Update the image for a plant",
+      "fields": {
+        "plant_id": {
+          "name": "Plant ID", 
+          "description": "The ID of the plant to update"
+        },
+        "image_path": {
+          "name": "Image Path",
+          "description": "Path to the new image file"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,79 @@
+# Example automations for Planty
+
+# Send notification when plant needs water
+- alias: "Plant Watering Reminder"
+  description: "Send notification when a plant needs watering"
+  trigger:
+    - platform: state
+      entity_id: 
+        - sensor.planty_pothos_water_status
+        - sensor.planty_snake_plant_water_status
+        - sensor.planty_peace_lily_water_status
+      to: "needs_water"
+  action:
+    - service: notify.mobile_app_{{ device_name }}
+      data:
+        title: "🌱 Plant Care Reminder"
+        message: "{{ trigger.to_state.attributes.friendly_name }} needs watering!"
+        data:
+          tag: "plant_watering"
+          group: "plant_care"
+          actions:
+            - action: "WATER_PLANT"
+              title: "Mark as Watered"
+
+# Handle notification action
+- alias: "Water Plant from Notification"
+  description: "Water plant when notification action is pressed"
+  trigger:
+    - platform: event
+      event_type: mobile_app_notification_action
+      event_data:
+        action: "WATER_PLANT"
+  action:
+    - service: planty.water_plant
+      data:
+        plant_id: "{{ trigger.event.data.tag.split('_')[1] }}"
+
+# Auto-water plants with smart irrigation system
+- alias: "Smart Plant Watering"
+  description: "Automatically water plants when humidity is low"
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.planty_monstera_humidity
+      below: 30
+  condition:
+    - condition: time
+      after: "06:00:00"
+      before: "20:00:00"
+  action:
+    - service: switch.turn_on
+      entity_id: switch.plant_irrigation_pump
+    - delay: "00:00:30"
+    - service: switch.turn_off
+      entity_id: switch.plant_irrigation_pump
+    - service: planty.water_plant
+      data:
+        plant_id: "monstera"
+
+# Weekly plant care summary
+- alias: "Weekly Plant Care Summary"
+  description: "Send weekly summary of plant care"
+  trigger:
+    - platform: time
+      at: "09:00:00"
+    - condition: time
+      weekday:
+        - sun
+  action:
+    - service: notify.mobile_app_{{ device_name }}
+      data:
+        title: "🌿 Weekly Plant Care Summary"
+        message: >
+          Plants Status:
+          {% set healthy = states.sensor | selectattr('entity_id', 'match', 'sensor.planty_.*_water_status') | selectattr('state', 'eq', 'healthy') | list | count %}
+          {% set needs_water = states.sensor | selectattr('entity_id', 'match', 'sensor.planty_.*_water_status') | selectattr('state', 'eq', 'needs_water') | list | count %}
+          {% set overdue = states.sensor | selectattr('entity_id', 'match', 'sensor.planty_.*_water_status') | selectattr('state', 'eq', 'overdue') | list | count %}
+          • {{ healthy }} plants are healthy
+          • {{ needs_water }} plants need water
+          • {{ overdue }} plants are overdue
