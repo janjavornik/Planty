@@ -1,17 +1,7 @@
 // Planty Custom Cards Main Loader
 // This file loads and registers all Planty custom cards
 
-import './planty-card.js';
-import './planty-header-card.js';
-import './planty-settings-card.js';
-import './planty-welcome-card.js';
-
-// Version info
-console.info(
-  '%c PLANTY %c 1.0.0 ',
-  'color: white; background: #4CAF50; font-weight: 700;',
-  'color: #4CAF50; background: white; font-weight: 700;'
-);
+console.info('Loading Planty cards...');
 
 // Register card types with Home Assistant
 const cardTypes = [
@@ -35,4 +25,11 @@ cardTypes.forEach(type => {
   }
 });
 
-console.info('Planty cards loaded successfully');
+// Version info
+console.info(
+  '%c PLANTY %c 1.0.0 ',
+  'color: white; background: #4CAF50; font-weight: 700;',
+  'color: #4CAF50; background: white; font-weight: 700;'
+);
+
+console.info('Planty cards registered successfully');

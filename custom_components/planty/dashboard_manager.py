@@ -41,6 +41,24 @@ class DashboardManager:
             
         except Exception as err:
             _LOGGER.error("Failed to create My Plants dashboard: %s", err)
+            # Try simple notification instead
+            try:
+                await self._create_simple_notification()
+            except Exception:
+                pass  # Fail silently
+    
+    async def _create_simple_notification(self) -> None:
+        """Create a simple notification about manual dashboard setup."""
+        await self.hass.services.async_call(
+            "persistent_notification",
+            "create",
+            {
+                "message": "Planty integration is ready! You can create plant sensors using the planty.add_plant service. "
+                          "Check the Planty integration page for more details.",
+                "title": "Planty Setup Complete",
+                "notification_id": "planty_setup"
+            }
+        )
     
     async def async_update_dashboard(self) -> None:
         """Update the dashboard with current plants."""
@@ -124,35 +142,52 @@ class DashboardManager:
         await self._store.async_save(dashboard_config)
         
         try:
-            # Simple registration method - store config for lovelace to pick up
-            if "lovelace" not in self.hass.data:
-                self.hass.data["lovelace"] = {}
-            if "dashboards" not in self.hass.data["lovelace"]:
-                self.hass.data["lovelace"]["dashboards"] = {}
+            # Use frontend panel registration - more reliable
+            from homeassistant.components import frontend
             
-            # Store dashboard config
-            self.hass.data["lovelace"]["dashboards"][DASHBOARD_URL_PATH] = {
-                "mode": "yaml", 
-                "title": DASHBOARD_TITLE,
-                "icon": DASHBOARD_ICON,
-                "show_in_sidebar": True,
-                "require_admin": False,
-                "config": dashboard_config
-            }
+            # Register as a panel first
+            frontend.async_register_built_in_panel(
+                self.hass,
+                "lovelace",
+                DASHBOARD_TITLE,
+                DASHBOARD_ICON,
+                DASHBOARD_URL_PATH,
+                {"mode": "yaml"},
+                require_admin=False,
+                sidebar_title=DASHBOARD_TITLE,
+                sidebar_icon=DASHBOARD_ICON,
+                url_path=DASHBOARD_URL_PATH
+            )
             
-            _LOGGER.info("Successfully registered My Plants dashboard")
+            _LOGGER.info("Successfully registered My Plants dashboard as panel")
             
         except Exception as err:
-            _LOGGER.error("Dashboard registration failed, trying frontend fallback: %s", err)
+            _LOGGER.warning("Panel registration failed, trying lovelace method: %s", err)
             
-            # Register with frontend as fallback
-            await self._register_with_frontend(dashboard_config)
-        
-        # Fire event to update frontend
-        self.hass.bus.async_fire("lovelace_updated", {
-            "url_path": DASHBOARD_URL_PATH,
-            "mode": "yaml"
-        })
+            try:
+                # Fallback to lovelace registration
+                if "lovelace" not in self.hass.data:
+                    self.hass.data["lovelace"] = {}
+                if "dashboards" not in self.hass.data["lovelace"]:
+                    self.hass.data["lovelace"]["dashboards"] = {}
+                
+                # Use a unique key to avoid conflicts
+                dashboard_key = f"planty_{DASHBOARD_URL_PATH}"
+                self.hass.data["lovelace"]["dashboards"][dashboard_key] = {
+                    "mode": "yaml", 
+                    "title": DASHBOARD_TITLE,
+                    "icon": DASHBOARD_ICON,
+                    "show_in_sidebar": True,
+                    "require_admin": False,
+                    "url_path": DASHBOARD_URL_PATH,
+                    "config": dashboard_config
+                }
+                
+                _LOGGER.info("Successfully registered dashboard via lovelace fallback")
+                
+            except Exception as fallback_err:
+                _LOGGER.error("All dashboard registration methods failed: %s", fallback_err)
+                # Don't re-raise - let the integration continue without dashboard
     
     async def _register_with_frontend(self, dashboard_config: Dict[str, Any]) -> None:
         """Fallback method to register dashboard with frontend."""
