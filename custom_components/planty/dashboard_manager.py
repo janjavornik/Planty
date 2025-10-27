@@ -124,36 +124,28 @@ class DashboardManager:
         await self._store.async_save(dashboard_config)
         
         try:
-            # Try to use the lovelace integration's dashboard registration
-            from homeassistant.components.lovelace import dashboard
-            
-            # Create dashboard
-            dashboard_obj = dashboard.LovelaceDashboard(
-                self.hass,
-                DASHBOARD_URL_PATH,
-                {
-                    "mode": "yaml",
-                    "title": DASHBOARD_TITLE,
-                    "icon": DASHBOARD_ICON,
-                    "show_in_sidebar": True,
-                    "require_admin": False,
-                    "config": dashboard_config
-                }
-            )
-            
-            # Register with hass
+            # Simple registration method - store config for lovelace to pick up
             if "lovelace" not in self.hass.data:
                 self.hass.data["lovelace"] = {}
             if "dashboards" not in self.hass.data["lovelace"]:
                 self.hass.data["lovelace"]["dashboards"] = {}
             
-            self.hass.data["lovelace"]["dashboards"][DASHBOARD_URL_PATH] = dashboard_obj
+            # Store dashboard config
+            self.hass.data["lovelace"]["dashboards"][DASHBOARD_URL_PATH] = {
+                "mode": "yaml", 
+                "title": DASHBOARD_TITLE,
+                "icon": DASHBOARD_ICON,
+                "show_in_sidebar": True,
+                "require_admin": False,
+                "config": dashboard_config
+            }
             
-        except ImportError:
-            # Fallback registration method
-            _LOGGER.warning("Could not import lovelace dashboard, using fallback registration")
+            _LOGGER.info("Successfully registered My Plants dashboard")
             
-            # Register with frontend
+        except Exception as err:
+            _LOGGER.error("Dashboard registration failed, trying frontend fallback: %s", err)
+            
+            # Register with frontend as fallback
             await self._register_with_frontend(dashboard_config)
         
         # Fire event to update frontend
@@ -187,6 +179,10 @@ class DashboardManager:
 
 async def async_setup_dashboard(hass: HomeAssistant, entry: ConfigEntry) -> DashboardManager:
     """Set up the dashboard manager."""
-    manager = DashboardManager(hass, entry)
-    await manager.async_create_dashboard()
-    return manager
+    try:
+        manager = DashboardManager(hass, entry)
+        await manager.async_create_dashboard()
+        return manager
+    except Exception as err:
+        _LOGGER.error("Dashboard setup failed: %s", err)
+        raise

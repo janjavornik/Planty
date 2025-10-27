@@ -113,11 +113,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # Set up image handler
     image_handler = await async_setup_image_handler(hass)
     
-    # Set up dashboard manager
-    dashboard_manager = await async_setup_dashboard(hass, entry)
-    
     # Register frontend resources
     await async_register_frontend_resources(hass)
+    
+    # Set up dashboard manager (optional - don't fail if this errors)
+    dashboard_manager = None
+    try:
+        dashboard_manager = await async_setup_dashboard(hass, entry)
+        _LOGGER.info("Dashboard manager setup successful")
+    except Exception as err:
+        _LOGGER.error("Dashboard manager setup failed, continuing without dashboard: %s", err)
+        dashboard_manager = None
     
     # Store data in hass.data
     hass.data.setdefault(DOMAIN, {})
@@ -208,9 +214,13 @@ async def async_register_services(hass: HomeAssistant, entry: ConfigEntry) -> No
         
         await storage.async_save()
         
-        # Update dashboard
-        dashboard_manager = hass.data[DOMAIN][entry.entry_id]["dashboard_manager"]
-        await dashboard_manager.async_update_dashboard()
+        # Update dashboard if available
+        dashboard_manager = hass.data[DOMAIN][entry.entry_id].get("dashboard_manager")
+        if dashboard_manager:
+            try:
+                await dashboard_manager.async_update_dashboard()
+            except Exception as err:
+                _LOGGER.error("Failed to update dashboard: %s", err)
         
         # Reload the integration to create new entities
         await hass.config_entries.async_reload(entry.entry_id)
@@ -254,9 +264,13 @@ async def async_register_services(hass: HomeAssistant, entry: ConfigEntry) -> No
             storage.data["plants"][plant_id].update(settings)
             await storage.async_save()
             
-            # Update dashboard
-            dashboard_manager = hass.data[DOMAIN][entry.entry_id]["dashboard_manager"]
-            await dashboard_manager.async_update_dashboard()
+            # Update dashboard if available
+            dashboard_manager = hass.data[DOMAIN][entry.entry_id].get("dashboard_manager")
+            if dashboard_manager:
+                try:
+                    await dashboard_manager.async_update_dashboard()
+                except Exception as err:
+                    _LOGGER.error("Failed to update dashboard: %s", err)
             
             # Fire event to update entities
             hass.bus.async_fire(f"{DOMAIN}_plant_updated", {"plant_id": plant_id})
@@ -292,27 +306,43 @@ def get_plant_database(hass: HomeAssistant, entry_id: str) -> dict[str, Any]:
 
 async def async_register_frontend_resources(hass: HomeAssistant) -> None:
     """Register frontend resources."""
-    from homeassistant.components.frontend import add_extra_js_url
-    
-    # Register the main Planty JavaScript module
-    add_extra_js_url(hass, "/planty_static/planty.js")
-    
-    # Register individual card files as well for fallback
-    card_files = [
-        "planty-card.js",
-        "planty-header-card.js", 
-        "planty-settings-card.js",
-        "planty-welcome-card.js"
-    ]
-    
-    for card_file in card_files:
-        add_extra_js_url(hass, f"/planty_static/{card_file}")
-    
-    # Register static file handler
-    import os
-    integration_path = os.path.dirname(__file__)
-    www_path = os.path.join(integration_path, "www")
-    
-    hass.http.register_static_path(
-        "/planty_static", www_path, cache_headers=False
-    )
+    try:
+        # Register static file handler first
+        import os
+        integration_path = os.path.dirname(__file__)
+        www_path = os.path.join(integration_path, "www")
+        
+        if os.path.exists(www_path):
+            hass.http.register_static_path(
+                "/planty_static", www_path, cache_headers=False
+            )
+            _LOGGER.info("Registered static path: %s", www_path)
+        else:
+            _LOGGER.warning("WWW path not found: %s", www_path)
+            return
+        
+        # Register frontend resources if available
+        try:
+            from homeassistant.components.frontend import add_extra_js_url
+            
+            # Register individual card files
+            card_files = [
+                "planty-card.js",
+                "planty-header-card.js", 
+                "planty-settings-card.js",
+                "planty-welcome-card.js"
+            ]
+            
+            for card_file in card_files:
+                card_path = os.path.join(www_path, card_file)
+                if os.path.exists(card_path):
+                    add_extra_js_url(hass, f"/planty_static/{card_file}")
+                    _LOGGER.debug("Registered card: %s", card_file)
+                else:
+                    _LOGGER.warning("Card file not found: %s", card_path)
+            
+        except ImportError as err:
+            _LOGGER.warning("Could not import frontend components: %s", err)
+            
+    except Exception as err:
+        _LOGGER.error("Failed to register frontend resources: %s", err)
